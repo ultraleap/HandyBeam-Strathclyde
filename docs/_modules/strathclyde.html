@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>strathclyde &mdash; Ultrasonics Course  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Ultrasonics Course
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Ultrasonics Course</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>strathclyde</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for strathclyde</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">linesep</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<div class="viewcode-block" id="LinearArray"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray">[docs]</a><span class="k">class</span> <span class="nc">LinearArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates some basic properties of a linear phased array probe, and then generates input data for HandyBeam and OnScale/PZFlex</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; wave length in given media, in meters [m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wavenumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;count of waves per meter, in [1/m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wavenumber_rotations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;count of rotations per meter, in [radians/m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dx_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;distance between points for sampling the radiating surfaces with radiating points, in [m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_density</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;calculated size of the active aperture [m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_pitch</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_count</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">element_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;calculated gap width between elements&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_pitch</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">element_width</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active_aperture_near_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;estimated distance from the probe surface to the transition between near and far field,[m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_aperture</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span> <span class="o">/</span> <span class="mf">4.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">passive_aperture_near_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;estimated distance from the probe surface to the transition between near and far field,[m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span> <span class="o">/</span> <span class="mf">4.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span>
+
+<div class="viewcode-block" id="LinearArray.focusing_power_estimate"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.focusing_power_estimate">[docs]</a>    <span class="k">def</span> <span class="nf">focusing_power_estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focal_distance</span><span class="p">,</span> <span class="n">aperture</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;estimated size of the focal point given aperture, distance and envinroment parameters,[m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">1.02</span><span class="o">*</span><span class="n">focal_distance</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span><span class="o">/</span><span class="n">aperture</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">focal_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;distance from probe centre to the selected focal point,[m]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_point</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">passive_aperture_focus_power_estimage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;estimated natural focus spot size in the passive plane&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">focusing_power_estimate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture_near_field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active_aperture_focus_power_estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;estimated focal spot size in the active plane, for given selected focal point location&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">focusing_power_estimate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_aperture</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">element_centre_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;location of the centres of the elements</span>
+
+<span class="sd">        format: :code:`np.array(n,3)`,</span>
+
+<span class="sd">        where first dimension, :code:`n` - count of elements,</span>
+
+<span class="sd">        2nd dimension: :code:`[idx,:]=np.array((x,y,z))` - `x`,`y`,`z` components of the location vector; `idx` - element index</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">))</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                                       <span class="n">stop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                                       <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">,</span>
+                                       <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span>
+                                       <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">locations</span>
+
+<div class="viewcode-block" id="LinearArray.time_of_flight"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.time_of_flight">[docs]</a>    <span class="k">def</span> <span class="nf">time_of_flight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">source</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span>
+                       <span class="n">destination</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+                       <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;calculate time of flight between two points</span>
+
+<span class="sd">        Point is a tuple e.g. :code:`np.array(0.0,0.0,1.0)`</span>
+
+<span class="sd">        does :code:`np.sqrt(np.sum((destination-source)**2))/self.sound_velocity`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">destination</span><span class="o">-</span><span class="n">source</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_of_flight_probe_to_focal_point</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; calculate and return all Time of Flights between probe elements and the focal point</span>
+
+<span class="sd">        :returns: tofs=np.array(), shaped [ self.element_count,]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_centre_locations</span>
+        <span class="n">tofs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">)</span>  <span class="c1"># initialize the output with NaNs</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">):</span>
+            <span class="n">tofs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_of_flight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_point</span><span class="p">,</span> <span class="n">locations</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:])</span>
+
+        <span class="k">return</span> <span class="n">tofs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">focal_laws</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;generate focal laws -- the **delays** needed for each array element to focus the wave into the focal point</span>
+
+<span class="sd">        :returns: focal_laws=np.array(), shaped [ self.element_count,]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_of_flight_probe_to_focal_point</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tofs</span><span class="p">)</span><span class="o">-</span><span class="n">tofs</span>
+
+
+<div class="viewcode-block" id="LinearArray.__init__"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+                 <span class="bp">self</span><span class="p">,</span>
+                 <span class="n">radiation_frequency</span><span class="o">=</span><span class="mf">40e3</span><span class="p">,</span>
+                 <span class="n">sound_velocity</span><span class="o">=</span><span class="mi">343</span><span class="p">,</span>
+                 <span class="n">sampling_density</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span>
+                 <span class="n">passive_aperture</span><span class="o">=</span><span class="mf">12e-3</span><span class="p">,</span>
+                 <span class="n">element_pitch</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span>
+                 <span class="n">element_width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">element_count</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                 <span class="n">focal_point</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0e-3</span><span class="p">,</span> <span class="mf">0.0e-3</span><span class="p">,</span> <span class="mf">200e-3</span><span class="p">))</span>
+                <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new linear phased array probe.</span>
+
+<span class="sd">        :param float radiation_frequency: intended fundamental radiation frequency</span>
+<span class="sd">        :param float sound_velocity: sound velocity in the medium interfacing the probe</span>
+<span class="sd">        :param int sampling_density: for output to HandyBeam, how many sampling points create per lambda. Default=17</span>
+<span class="sd">        :param float passive_aperture: size of the passive aperture</span>
+<span class="sd">        :param float element_pitch: distance between centres of elements</span>
+<span class="sd">        :param float element_width: active-aperture size of the array element. Set to none to use :code:`element_pitch/2`. Default: None.</span>
+<span class="sd">        :param int element_count: How many elements in this array. Default: 16</span>
+<span class="sd">        :param tuple(float) focal_point: xyz location of the intended focal point. default: (0.0e-3,0.0e-3,200e-3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span> <span class="o">=</span> <span class="n">radiation_frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span> <span class="o">=</span> <span class="n">sound_velocity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span> <span class="o">=</span> <span class="n">passive_aperture</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_density</span> <span class="o">=</span> <span class="n">sampling_density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element_pitch</span> <span class="o">=</span> <span class="n">element_pitch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element_count</span> <span class="o">=</span> <span class="n">element_count</span>
+        <span class="k">if</span> <span class="n">element_width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">element_width</span> <span class="o">=</span> <span class="n">element_pitch</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">element_width</span> <span class="o">=</span> <span class="n">element_width</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">focal_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">focal_point</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinearArray.__str__"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns basic properties of the probe definition&quot;&quot;&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="s2">&quot;Basic linear probe:&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt; Environment:&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   radiation frequency: </span><span class="si">{:0.1f}</span><span class="s2">kHz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radiation_frequency</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   sound_velocity :</span><span class="si">{:0.1f}</span><span class="s2">m/s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sound_velocity</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   sound wave length :</span><span class="si">{:0.3f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   medium wavenumber: </span><span class="si">{:0.1f}</span><span class="s2">[waves/meter]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   point sources sampling density: </span><span class="si">{}</span><span class="s2">pt/lambda linear, spacing of </span><span class="si">{:0.3f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx_simulation</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt; Probe definition:&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   Passive aperture: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   element width: </span><span class="si">{:0.3f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_width</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   element count: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt; Probe calculated properties:&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   inter-element gap: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_gap</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   Active aperture: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   Active aperture near field transition: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture_near_field</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   Passive aperture near field transition: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture_near_field</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   Active aperture near field transition: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture_near_field</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt; Focal point calculated properties:&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   focal distance: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_distance</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   active aperture -6dB focal spot size: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_aperture_focus_power_estimate</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s2">&quot;&gt;&gt;   passive aperture -6dB natural focus spot size: </span><span class="si">{:0.1f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture_focus_power_estimage</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">txt</span></div>
+
+<div class="viewcode-block" id="LinearArray.__repr__"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;links to self.__str__()&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LinearArray.visualize_array_elements"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.visualize_array_elements">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_array_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; create a 2D top-down plot of how do the array element patches look like</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. image:: _static/example_visualize_array_elements.png</span>
+
+<span class="sd">        :param figsize: size in inches of the created figure canvas</span>
+<span class="sd">        :param dpi: resolution in points-per-inch for the figure canvas</span>
+<span class="sd">        :param filename: file name to save to. For example, :code:`output.png`. Do attach a `.png` at the end. Default :code:`None`</span>
+<span class="sd">        :return: displays a figure, and optionally, saves it to a file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="sd">&quot;&quot;&quot;create a 2D top-down plot of how do the array element patches look like&quot;&quot;&quot;</span>
+        <span class="n">hf</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="n">ha</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span>
+
+        <span class="kn">from</span> <span class="nn">matplotlib.collections</span> <span class="k">import</span> <span class="n">PatchCollection</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="k">import</span> <span class="n">Rectangle</span>
+
+        <span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_centre_locations</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_count</span><span class="p">):</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">((</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">locations</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">passive_aperture</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_width</span><span class="p">)</span>
+            <span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="n">PatchCollection</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                             <span class="n">edgecolor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">ha</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">pc</span><span class="p">)</span>
+
+        <span class="c1"># add points for element centres</span>
+        <span class="n">hp</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_centre_locations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_centre_locations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x-dimension[m]</span><span class="se">\n</span><span class="s1">passive aperture&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;y-dimension[m]</span><span class="se">\n</span><span class="s1">active aperture&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LinearArray.visualize_time_of_flight"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.visualize_time_of_flight">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_time_of_flight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;plots the computed time-of-flight values for each probe element</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. image:: _static/example_visualize_time_of_flight.png</span>
+
+<span class="sd">        :param figsize: size in inches of the created figure canvas</span>
+<span class="sd">        :param dpi: resolution in points-per-inch for the figure canvas</span>
+<span class="sd">        :param filename: file name to save to. For example, :code:`output.png`. Do attach a `.png` at the end. Default :code:`None`</span>
+<span class="sd">        :return: displays a figure, and optionally, saves it to a file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_of_flight_probe_to_focal_point</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;element index[-]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;time of flight from probe</span><span class="se">\n</span><span class="s1"> to focal point[$\mu$s]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LinearArray.visualize_focal_laws"><a class="viewcode-back" href="../index.html#strathclyde.LinearArray.visualize_focal_laws">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_focal_laws</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;plots computed firing delays (focal laws)  for each probe element</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. image:: _static/example_visualize_focal_laws.png</span>
+
+
+<span class="sd">        :param figsize: size in inches of the created figure canvas</span>
+<span class="sd">        :param dpi: resolution in points-per-inch for the figure canvas</span>
+<span class="sd">        :param filename: file name to save to. For example, :code:`output.png`. Do attach a `.png` at the end. Default :code:`None`</span>
+<span class="sd">        :return: displays a figure, and optionally, saves it to a file.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_laws</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;element index[-]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;time of flight from probe</span><span class="se">\n</span><span class="s1"> to focal point[$\mu$s]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Ultrahaptics 2018-2019. License: Creative Commons CC BY-NC-SA 4.0
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

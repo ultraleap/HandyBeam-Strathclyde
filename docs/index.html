@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Strathclyde (python module) &mdash; Ultrasonics Course  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> Ultrasonics Course
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Strathclyde (python module)</a></li>
+<li><a class="reference internal" href="#index-todo">Index(ToDo)</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Ultrasonics Course</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Strathclyde (python module)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-strathclyde">
+<span id="strathclyde-python-module"></span><h1>Strathclyde (python module)<a class="headerlink" href="#module-strathclyde" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="strathclyde.LinearArray">
+<em class="property">class </em><code class="descclassname">strathclyde.</code><code class="descname">LinearArray</code><span class="sig-paren">(</span><em>radiation_frequency=40000.0</em>, <em>sound_velocity=343</em>, <em>sampling_density=17</em>, <em>passive_aperture=0.012</em>, <em>element_pitch=0.001</em>, <em>element_width=None</em>, <em>element_count=16</em>, <em>focal_point=array([0.</em>, <em>0.</em>, <em>0.2])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates some basic properties of a linear phased array probe, and then generates input data for HandyBeam and OnScale/PZFlex</p>
+<dl class="method">
+<dt id="strathclyde.LinearArray.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>radiation_frequency=40000.0</em>, <em>sound_velocity=343</em>, <em>sampling_density=17</em>, <em>passive_aperture=0.012</em>, <em>element_pitch=0.001</em>, <em>element_width=None</em>, <em>element_count=16</em>, <em>focal_point=array([0.</em>, <em>0.</em>, <em>0.2])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new linear phased array probe.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>radiation_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – intended fundamental radiation frequency</li>
+<li><strong>sound_velocity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – sound velocity in the medium interfacing the probe</li>
+<li><strong>sampling_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – for output to HandyBeam, how many sampling points create per lambda. Default=17</li>
+<li><strong>passive_aperture</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – size of the passive aperture</li>
+<li><strong>element_pitch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – distance between centres of elements</li>
+<li><strong>element_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – active-aperture size of the array element. Set to none to use <code class="code docutils literal notranslate"><span class="pre">element_pitch/2</span></code>. Default: None.</li>
+<li><strong>element_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – How many elements in this array. Default: 16</li>
+<li><strong>focal_point</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>)</em>) – xyz location of the intended focal point. default: (0.0e-3,0.0e-3,200e-3)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>links to self.__str__()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.__str__">
+<code class="descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns basic properties of the probe definition</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.active_aperture">
+<code class="descname">active_aperture</code><a class="headerlink" href="#strathclyde.LinearArray.active_aperture" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculated size of the active aperture [m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.active_aperture_focus_power_estimate">
+<code class="descname">active_aperture_focus_power_estimate</code><a class="headerlink" href="#strathclyde.LinearArray.active_aperture_focus_power_estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>estimated focal spot size in the active plane, for given selected focal point location</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.active_aperture_near_field">
+<code class="descname">active_aperture_near_field</code><a class="headerlink" href="#strathclyde.LinearArray.active_aperture_near_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>estimated distance from the probe surface to the transition between near and far field,[m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.dx_simulation">
+<code class="descname">dx_simulation</code><a class="headerlink" href="#strathclyde.LinearArray.dx_simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>distance between points for sampling the radiating surfaces with radiating points, in [m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.element_centre_locations">
+<code class="descname">element_centre_locations</code><a class="headerlink" href="#strathclyde.LinearArray.element_centre_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>location of the centres of the elements</p>
+<p>format: <code class="code docutils literal notranslate"><span class="pre">np.array(n,3)</span></code>,</p>
+<p>where first dimension, <code class="code docutils literal notranslate"><span class="pre">n</span></code> - count of elements,</p>
+<p>2nd dimension: <code class="code docutils literal notranslate"><span class="pre">[idx,:]=np.array((x,y,z))</span></code> - <cite>x</cite>,`y`,`z` components of the location vector; <cite>idx</cite> - element index</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.element_gap">
+<code class="descname">element_gap</code><a class="headerlink" href="#strathclyde.LinearArray.element_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculated gap width between elements</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.focal_distance">
+<code class="descname">focal_distance</code><a class="headerlink" href="#strathclyde.LinearArray.focal_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>distance from probe centre to the selected focal point,[m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.focal_laws">
+<code class="descname">focal_laws</code><a class="headerlink" href="#strathclyde.LinearArray.focal_laws" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate focal laws – the <strong>delays</strong> needed for each array element to focus the wave into the focal point</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">focal_laws=np.array(), shaped [ self.element_count,]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.focusing_power_estimate">
+<code class="descname">focusing_power_estimate</code><span class="sig-paren">(</span><em>focal_distance</em>, <em>aperture</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.focusing_power_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.focusing_power_estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>estimated size of the focal point given aperture, distance and envinroment parameters,[m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.passive_aperture_focus_power_estimage">
+<code class="descname">passive_aperture_focus_power_estimage</code><a class="headerlink" href="#strathclyde.LinearArray.passive_aperture_focus_power_estimage" title="Permalink to this definition">¶</a></dt>
+<dd><p>estimated natural focus spot size in the passive plane</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.passive_aperture_near_field">
+<code class="descname">passive_aperture_near_field</code><a class="headerlink" href="#strathclyde.LinearArray.passive_aperture_near_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>estimated distance from the probe surface to the transition between near and far field,[m]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.time_of_flight">
+<code class="descname">time_of_flight</code><span class="sig-paren">(</span><em>source=array([0.</em>, <em>0.</em>, <em>0.])</em>, <em>destination=array([0.</em>, <em>0.</em>, <em>1.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.time_of_flight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.time_of_flight" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate time of flight between two points</p>
+<p>Point is a tuple e.g. <code class="code docutils literal notranslate"><span class="pre">np.array(0.0,0.0,1.0)</span></code></p>
+<p>does <code class="code docutils literal notranslate"><span class="pre">np.sqrt(np.sum((destination-source)**2))/self.sound_velocity</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.time_of_flight_probe_to_focal_point">
+<code class="descname">time_of_flight_probe_to_focal_point</code><a class="headerlink" href="#strathclyde.LinearArray.time_of_flight_probe_to_focal_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate and return all Time of Flights between probe elements and the focal point</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tofs=np.array(), shaped [ self.element_count,]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.visualize_array_elements">
+<code class="descname">visualize_array_elements</code><span class="sig-paren">(</span><em>figsize=(4</em>, <em>3)</em>, <em>dpi=150</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.visualize_array_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.visualize_array_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a 2D top-down plot of how do the array element patches look like</p>
+<p>Example:</p>
+<img alt="_images/example_visualize_array_elements.png" src="_images/example_visualize_array_elements.png" />
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>figsize</strong> – size in inches of the created figure canvas</li>
+<li><strong>dpi</strong> – resolution in points-per-inch for the figure canvas</li>
+<li><strong>filename</strong> – file name to save to. For example, <code class="code docutils literal notranslate"><span class="pre">output.png</span></code>. Do attach a <cite>.png</cite> at the end. Default <code class="code docutils literal notranslate"><span class="pre">None</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">displays a figure, and optionally, saves it to a file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.visualize_focal_laws">
+<code class="descname">visualize_focal_laws</code><span class="sig-paren">(</span><em>figsize=(4</em>, <em>3)</em>, <em>dpi=150</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.visualize_focal_laws"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.visualize_focal_laws" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots computed firing delays (focal laws)  for each probe element</p>
+<p>Example:</p>
+<img alt="_images/example_visualize_focal_laws.png" src="_images/example_visualize_focal_laws.png" />
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>figsize</strong> – size in inches of the created figure canvas</li>
+<li><strong>dpi</strong> – resolution in points-per-inch for the figure canvas</li>
+<li><strong>filename</strong> – file name to save to. For example, <code class="code docutils literal notranslate"><span class="pre">output.png</span></code>. Do attach a <cite>.png</cite> at the end. Default <code class="code docutils literal notranslate"><span class="pre">None</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">displays a figure, and optionally, saves it to a file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="strathclyde.LinearArray.visualize_time_of_flight">
+<code class="descname">visualize_time_of_flight</code><span class="sig-paren">(</span><em>figsize=(4</em>, <em>3)</em>, <em>dpi=150</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strathclyde.html#LinearArray.visualize_time_of_flight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#strathclyde.LinearArray.visualize_time_of_flight" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots the computed time-of-flight values for each probe element</p>
+<p>Example:</p>
+<img alt="_images/example_visualize_time_of_flight.png" src="_images/example_visualize_time_of_flight.png" />
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>figsize</strong> – size in inches of the created figure canvas</li>
+<li><strong>dpi</strong> – resolution in points-per-inch for the figure canvas</li>
+<li><strong>filename</strong> – file name to save to. For example, <code class="code docutils literal notranslate"><span class="pre">output.png</span></code>. Do attach a <cite>.png</cite> at the end. Default <code class="code docutils literal notranslate"><span class="pre">None</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">displays a figure, and optionally, saves it to a file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.wavelength">
+<code class="descname">wavelength</code><a class="headerlink" href="#strathclyde.LinearArray.wavelength" title="Permalink to this definition">¶</a></dt>
+<dd><p>wave length in given media, in meters [m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.wavenumber">
+<code class="descname">wavenumber</code><a class="headerlink" href="#strathclyde.LinearArray.wavenumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>count of waves per meter, in [1/m]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="strathclyde.LinearArray.wavenumber_rotations">
+<code class="descname">wavenumber_rotations</code><a class="headerlink" href="#strathclyde.LinearArray.wavenumber_rotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>count of rotations per meter, in [radians/m]</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="index-todo">
+<h1>Index(ToDo)<a class="headerlink" href="#index-todo" title="Permalink to this headline">¶</a></h1>
+<img alt="Ultrahaptics logo" class="align-center" src="_images/ultrahapticslogo.png" />
+<img alt="HandyBeam beam visual" class="align-right" src="_images/HandyBeam_logo_icon_source.png" />
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+<hr class="docutils" />
+<hr class="docutils" />
+<p>Back to <a class="reference internal" href="#"><span class="doc">Strathclyde (python module)</span></a></p>
+<p><strong>Disclaimer</strong>: If anything uncool happens, it’s Your fault. If it breaks, you get to keep both pieces.</p>
+<p><strong>Licence</strong> (documentation): <a class="reference external" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons CC BY-NC-SA 4.0</a></p>
+<p><strong>Licence</strong> (source code): <a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></p>
+<p>This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 737087.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Ultrahaptics 2018-2019. License: Creative Commons CC BY-NC-SA 4.0
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
