@@ -16,6 +16,55 @@ class LinearArray:
     Calculates some basic properties of a linear phased array probe, and then generates input data for HandyBeam and OnScale/PZFlex.
     """
 
+    def __init__(
+                 self,
+                 radiation_frequency=40e3,
+                 sound_velocity=343,
+                 sampling_density=17,
+                 passive_aperture=12e-3,
+                 element_pitch=1.0e-3,
+                 element_width=None,
+                 element_count=16,
+                 focal_point=np.array((0.0e-3, 0.0e-3, 200e-3))
+                ):
+        """ Initialize the LinearArray object with the following properties:
+
+        Example use:
+
+        .. code-block:: python
+
+            array_builder = strathclyde.LinearArray()  # initialize
+            array_builder  # show output
+
+
+        :param float radiation_frequency: intended fundamental radiation frequency
+        :param float sound_velocity: sound velocity in the medium interfacing the probe
+        :param int sampling_density: for output to HandyBeam, how many sampling points create per lambda.
+        :param float passive_aperture: size of the passive aperture
+        :param float element_pitch: distance between centres of elements
+        :param float element_width: active-aperture size of the array element. Set to :code:`None` to get :code:`element_pitch/2`
+        :param int element_count: How many elements in this array.
+        :param tuple(float) focal_point: xyz location of the intended focal point.
+        """
+        self.radiation_frequency = radiation_frequency
+        self.sound_velocity = sound_velocity
+        self.passive_aperture = passive_aperture
+        self.sampling_density = sampling_density
+        self.element_pitch = element_pitch
+        self.element_count = element_count
+        if element_width is None:
+            self.element_width = element_pitch * 0.5
+        else:
+            self.element_width = element_width
+
+        self.focal_point = np.array(focal_point)
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# @property*
+
     @property
     def wavelength(self):
         """ wave length in given media, in meters [m]"""
@@ -65,7 +114,6 @@ class LinearArray:
         :param float aperture: aperture (passive or active) of interest. The result is valid for the aperture given.
         :return: estimated size of the focal point, [meters]
         """
-
         return 1.02*focal_distance*self.sound_velocity/self.radiation_frequency/aperture
 
     @property
@@ -175,48 +223,111 @@ class LinearArray:
         """
         return np.ones(shape=(self.element_count, 1))
 
-    def __init__(
-                 self,
-                 radiation_frequency=40e3,
-                 sound_velocity=343,
-                 sampling_density=17,
-                 passive_aperture=12e-3,
-                 element_pitch=1.0e-3,
-                 element_width=None,
-                 element_count=16,
-                 focal_point=np.array((0.0e-3, 0.0e-3, 200e-3))
-                ):
-        """ Initialize the LinearArray object with the following properties:
+    def create_point_cloud_for_array_element(self,
+                                             passive_aperture=np.NaN,
+                                             active_aperture=np.NaN,
+                                             element_position=np.array((0.0, 0.0, 0.0)),
+                                             tx_amplitude=1.0,
+                                             tx_phase=0.0):
+        """ Creates a cloud of :code:`xyznnnddddap____` points that simulate a larger aperture of a single phased array element.
 
-        Example use:
+        for the description of what is `xyznnnddddap____`, see the `tx_array_descriptor_a` documentation of `HandyBeam`
 
-        .. code-block:: python
+        .. ToDo::
 
-            array_builder = strathclyde.LinearArray()  # initialize
-            array_builder  # show output
+            turn the above codewords into links to the actual HandyBeam documentation.
+
+        note: the sampling is adjusted so that the sampler points are always touching the edge of the desired aperture.
 
 
-        :param float radiation_frequency: intended fundamental radiation frequency
-        :param float sound_velocity: sound velocity in the medium interfacing the probe
-        :param int sampling_density: for output to HandyBeam, how many sampling points create per lambda.
-        :param float passive_aperture: size of the passive aperture
-        :param float element_pitch: distance between centres of elements
-        :param float element_width: active-aperture size of the array element. Set to :code:`None` to get :code:`element_pitch/2`
-        :param int element_count: How many elements in this array.
-        :param tuple(float) focal_point: xyz location of the intended focal point.
+        :param passive_aperture: element size along the passive aperture, the x-dimension
+        :param active_aperture: element size along the active aperture, or the y-dimension
+        :param element_position: xyz location of the element.
+        :param float tx_amplitude: the amplitude to set to this transducer
+        :param float tx_phase: the phase to set to this transducer
+        :return: numpy.array.shape == (:,16); the count of points generated depends on :code:`self.dx_simulation`
+
         """
-        self.radiation_frequency = radiation_frequency
-        self.sound_velocity = sound_velocity
-        self.passive_aperture = passive_aperture
-        self.sampling_density = sampling_density
-        self.element_pitch = element_pitch
-        self.element_count = element_count
-        if element_width is None:
-            self.element_width = element_pitch * 0.5
-        else:
-            self.element_width = element_width
+        count_of_points_along_x = np.int(np.ceil(passive_aperture / self.dx_simulation))
+        count_of_points_along_y = np.int(np.ceil(active_aperture / self.dx_simulation))
+        coordinate_of_points_along_x = np.linspace(
+            -passive_aperture / 2 + element_position[0],
+            passive_aperture / 2 + element_position[0],
+            count_of_points_along_x)
 
-        self.focal_point = np.array(focal_point)
+        coordinate_of_points_along_y = np.linspace(
+            -active_aperture / 2 + element_position[1],
+            active_aperture / 2 + element_position[1],
+            count_of_points_along_y)
+
+        point_x_grid, point_y_grid = np.meshgrid(coordinate_of_points_along_x, coordinate_of_points_along_y)
+        point_x_list = np.expand_dims(np.ravel(point_x_grid), axis=0).T
+        point_y_list = np.expand_dims(np.ravel(point_y_grid), axis=0).T
+        point_z_list = np.zeros(shape=point_x_list.shape)
+
+        point_zeros_list = np.zeros(shape=point_x_list.shape)
+        point_ones_list = np.ones(shape=point_x_list.shape)
+        point_nan_list = np.full(point_x_list.shape, np.NaN)
+
+        point_list = np.concatenate(
+            (point_x_list,  # x
+             point_y_list,  # y
+             point_z_list,  # z
+             point_zeros_list,  # xnormal
+             point_zeros_list,  # ynormal
+             point_ones_list,  # znormal
+             point_zeros_list,  # directivity_phase_poly1_c1
+             point_ones_list,  # directivity_amplitude_poly2_c0
+             point_zeros_list,  # directivity_amplitude_poly2_c1
+             point_zeros_list,  # directivity_amplitude_poly2_c2
+             point_zeros_list + tx_amplitude,  # amplitude_ratio_setting
+             point_zeros_list + tx_phase,  # phase_setting
+             point_nan_list,  # 1st nan
+             point_nan_list,  # 2nd nan
+             point_nan_list,  # 3rd nan
+             point_nan_list   # last nan
+             ), axis=1)
+
+        return point_list
+
+    def create_point_cloud_all_elements(self):
+        """
+
+        .. ToDo::
+
+            ! ToDo: check if the direction of phases is correct -- could need to be negative here
+
+        :return: point cloud, numpy.array.shape == (:,16), the count of points generated depends on :code:`self.dx_simulation`
+
+
+        """
+        element_locations = self.element_centre_locations
+        focal_laws = self.focal_laws_delays
+        # convert time-domain focal law to frequency-domain focal law at the frequency of interest
+        # this means, wrap
+        # ! ToDo: check if the direction of phases is correct -- could need to be negative here
+        focal_laws_phases = self.focal_laws_phases
+        focal_laws_gains = self.focal_laws_gains
+
+        point_list = np.empty((0, 16))
+        for idx_element in range(self.element_count):
+            point_list = np.concatenate(
+                (point_list,
+                 self.create_point_cloud_for_array_element(
+                    passive_aperture=self.passive_aperture,
+                    active_aperture=self.element_width,
+                    element_position=element_locations[idx_element, :],
+                    tx_amplitude=focal_laws_gains[idx_element],
+                    tx_phase=focal_laws_phases[idx_element])
+                 )
+                 )
+        return point_list
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# visualize*
 
     def __str__(self):
         """Returns basic properties of the probe definition
@@ -378,6 +489,39 @@ class LinearArray:
             plt.savefig(filename, bbox_inches='tight')
             plt.close()
 
+    def visualize_point_cloud_all_elements(self, figsize=(4, 3), dpi=150, filename=None):
+        """plots computed firing delays (focal laws)  for each probe element
+
+        Example output :
+
+        .. image:: _static/example_visualize_focal_laws.png
+
+
+        :param figsize: size in inches of the created figure canvas
+        :param dpi: resolution in points-per-inch for the figure canvas
+        :param filename: file name to save to. For example, :code:`output.png`. Do attach a `.png` at the end. Default :code:`None`
+        :return: displays a figure, and optionally, saves it to a file.
+        """
+
+        plt.figure(figsize=figsize, dpi=dpi)
+        point_cloud = self.create_point_cloud_all_elements()
+        plt.plot(point_cloud[:, 0], point_cloud[:, 1], 'o')
+        plt.grid(True)
+        plt.axis('equal')
+        plt.xlabel('x-dimension[m]\npassive aperture')
+        plt.ylabel('y-dimension[m]\nactive aperture')
+        if filename is None:
+            plt.show()
+        else:
+            plt.savefig(filename, bbox_inches='tight')
+            plt.close()
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Export*
+
     def export_focal_laws_to_onscale(self, filename="focal_laws_delays.txt"):
         """ produces an input file to PZFlex/Onscale, that contains the focal laws and per-element gains
 
@@ -416,118 +560,6 @@ class LinearArray:
         handle_to_file .close()
 
         return txt
-
-    def create_point_cloud_for_array_element(self,
-                                             passive_aperture=np.NaN,
-                                             active_aperture=np.NaN,
-                                             element_position=np.array((0.0, 0.0, 0.0)),
-                                             tx_amplitude=1.0,
-                                             tx_phase=0.0):
-        """ Creates a cloud of :code:`xyznnnddddap____` points that simulate a larger aperture of a single phased array element.
-
-        for the description of what is `xyznnnddddap____`, see the `tx_array_descriptor_a` documentation of `HandyBeam`
-
-        .. ToDo::
-
-            turn the above codewords into links to the actual HandyBeam documentation.
-
-        note: the sampling is adjusted so that the sampler points are always touching the edge of the desired aperture.
-
-
-        :param passive_aperture: element size along the passive aperture, the x-dimension
-        :param active_aperture: element size along the active aperture, or the y-dimension
-        :param element_position: xyz location of the element.
-        :param float tx_amplitude: the amplitude to set to this transducer
-        :param float tx_phase: the phase to set to this transducer
-        :return: numpy.array.shape == (:,16); the count of points generated depends on :code:`self.dx_simulation`
-
-        """
-        count_of_points_along_x = np.int(np.ceil(passive_aperture / self.dx_simulation))
-        count_of_points_along_y = np.int(np.ceil(active_aperture / self.dx_simulation))
-        coordinate_of_points_along_x = np.linspace(
-            -passive_aperture / 2 + element_position[0],
-            passive_aperture / 2 + element_position[0],
-            count_of_points_along_x)
-
-        coordinate_of_points_along_y = np.linspace(
-            -active_aperture / 2 + element_position[1],
-            active_aperture / 2 + element_position[1],
-            count_of_points_along_y)
-
-        point_x_grid, point_y_grid = np.meshgrid(coordinate_of_points_along_x, coordinate_of_points_along_y)
-        point_x_list = np.expand_dims(np.ravel(point_x_grid), axis=0).T
-        point_y_list = np.expand_dims(np.ravel(point_y_grid), axis=0).T
-        point_z_list = np.zeros(shape=point_x_list.shape)
-
-        point_zeros_list = np.zeros(shape=point_x_list.shape)
-        point_ones_list = np.ones(shape=point_x_list.shape)
-        point_nan_list = np.full(point_x_list.shape, np.NaN)
-
-        point_list = np.concatenate(
-            (point_x_list,  # x
-             point_y_list,  # y
-             point_z_list,  # z
-             point_zeros_list,  # xnormal
-             point_zeros_list,  # ynormal
-             point_ones_list,  # znormal
-             point_zeros_list,  # directivity_phase_poly1_c1
-             point_ones_list,  # directivity_amplitude_poly2_c0
-             point_zeros_list,  # directivity_amplitude_poly2_c1
-             point_zeros_list,  # directivity_amplitude_poly2_c2
-             point_zeros_list + tx_amplitude,  # amplitude_ratio_setting
-             point_zeros_list + tx_phase,  # phase_setting
-             point_nan_list,  # 1st nan
-             point_nan_list,  # 2nd nan
-             point_nan_list,  # 3rd nan
-             point_nan_list   # last nan
-             ), axis=1)
-
-        return point_list
-
-    def create_point_cloud_all_elements(self):
-        """
-
-        .. ToDo::
-
-            ! ToDo: check if the direction of phases is correct -- could need to be negative here
-
-        :return: point cloud, numpy.array.shape == (:,16), the count of points generated depends on :code:`self.dx_simulation`
-
-
-        """
-        element_locations = self.element_centre_locations
-        focal_laws = self.focal_laws_delays
-        # convert time-domain focal law to frequency-domain focal law at the frequency of interest
-        # this means, wrap
-        # ! ToDo: check if the direction of phases is correct -- could need to be negative here
-        focal_laws_phases = self.focal_laws_phases
-        focal_laws_gains = self.focal_laws_gains
-
-        point_list = np.empty((0, 16))
-        for idx_element in range(self.element_count):
-            point_list = np.concatenate(
-                (point_list,
-                 self.create_point_cloud_for_array_element(
-                    passive_aperture=self.passive_aperture,
-                    active_aperture=self.element_width,
-                    element_position=element_locations[idx_element, :],
-                    tx_amplitude=focal_laws_gains[idx_element],
-                    tx_phase=focal_laws_phases[idx_element])
-                 )
-                 )
-        return point_list
-
-    def visualize_point_cloud_all_elements(self, figsize=(4, 3), dpi=150, filename=None):
-        plt.figure(figsize=figsize, dpi=pi)
-        point_cloud = self.create_point_cloud_all_elements()
-        plt.plot(point_cloud[:, 0], point_cloud[:, 1], 'o')
-        plt.grid(True)
-        plt.axis('equal')
-
-
-
-
-
 
     def create_handybeam_world(self):
         """ creates a handybeam.world.World object with the settings set up so that it is ready to conduct the simulation of the acoustic field generated by the array.
