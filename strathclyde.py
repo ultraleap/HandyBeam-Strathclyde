@@ -1,10 +1,19 @@
+"""
+
+module :mod:`strathclyde` -- complementary material for the RCNDE Ultrasonic Transduction Course
+
+Contains the class :class:`LinearArray`.
+
+
+"""
 from os import linesep
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class LinearArray:
     """
-    Calculates some basic properties of a linear phased array probe, and then generates input data for HandyBeam and OnScale/PZFlex
+    Calculates some basic properties of a linear phased array probe, and then generates input data for HandyBeam and OnScale/PZFlex.
     """
 
     @property
@@ -48,7 +57,15 @@ class LinearArray:
         return self.passive_aperture**2 * self.radiation_frequency / 4.0 / self.sound_velocity
 
     def focusing_power_estimate(self, focal_distance, aperture):
-        """estimated size of the focal point given aperture, distance and envinroment parameters,[m]"""
+        """estimated size of the focal point,  given aperture, distance and environment parameters,[m]
+
+        does :code:`return 1.02*focal_distance*self.sound_velocity/self.radiation_frequency/aperture`
+
+        :param float focal_distance: distance from the centre of the transmitter array to the focal point
+        :param float aperture: aperture (passive or active) of interest. The result is valid for the aperture given.
+        :return: estimated size of the focal point, [meters]
+        """
+
         return 1.02*focal_distance*self.sound_velocity/self.radiation_frequency/aperture
 
     @property
@@ -118,11 +135,22 @@ class LinearArray:
     def focal_laws(self):
         """generate focal laws -- the **delays** needed for each array element to focus the wave into the focal point
 
+        Example:
+
+        .. code-block:: python
+
+            array_builder=strathclyde.LinearArray()
+            print(array_builder.focal_laws)
+
+            [0.00000000e+00 7.75228203e-06 1.49642195e-05 2.15665444e-05
+             2.74851133e-05 3.26429389e-05 3.69632725e-05 4.03737335e-05
+             4.28112228e-05 4.42270507e-05 4.45914479e-05 4.38965672e-05
+             4.21573062e-05 3.94097568e-05 3.57076435e-05 3.11175211e-05]
+
         :returns: focal_laws=np.array(), shaped [ self.element_count,]
         """
         tofs = self.time_of_flight_probe_to_focal_point
         return np.max(tofs)-tofs
-
 
     def __init__(
                  self,
@@ -135,17 +163,24 @@ class LinearArray:
                  element_count=16,
                  focal_point=np.array((0.0e-3, 0.0e-3, 200e-3))
                 ):
-        """
-        Create a new linear phased array probe.
+        """ Initialize the LinearArray object with the following properties:
+
+        Example use:
+
+        .. code-block:: python
+
+            array_builder = strathclyde.LinearArray()  # initialize
+            array_builder  # show output
+
 
         :param float radiation_frequency: intended fundamental radiation frequency
         :param float sound_velocity: sound velocity in the medium interfacing the probe
-        :param int sampling_density: for output to HandyBeam, how many sampling points create per lambda. Default=17
+        :param int sampling_density: for output to HandyBeam, how many sampling points create per lambda.
         :param float passive_aperture: size of the passive aperture
         :param float element_pitch: distance between centres of elements
-        :param float element_width: active-aperture size of the array element. Set to none to use :code:`element_pitch/2`. Default: None.
-        :param int element_count: How many elements in this array. Default: 16
-        :param tuple(float) focal_point: xyz location of the intended focal point. default: (0.0e-3,0.0e-3,200e-3)
+        :param float element_width: active-aperture size of the array element. Set to :code:`None` to get :code:`element_pitch/2`
+        :param int element_count: How many elements in this array.
+        :param tuple(float) focal_point: xyz location of the intended focal point.
         """
         self.radiation_frequency = radiation_frequency
         self.sound_velocity = sound_velocity
@@ -161,7 +196,38 @@ class LinearArray:
         self.focal_point = np.array(focal_point)
 
     def __str__(self):
-        """returns basic properties of the probe definition"""
+        """Returns basic properties of the probe definition
+
+        Example output :
+
+        .. code-block:: XML
+
+            Basic linear probe:
+            > Environment:
+            >>   radiation frequency: 40.0kHz
+            >>   sound_velocity :343.0m/s
+            >>   sound wave length :8.575mm
+            >>   medium wavenumber: 116.6[waves/meter]
+            >>   point sources sampling density: 17pt/lambda linear, spacing of 0.504mm
+
+            > Probe definition:
+            >>   Passive aperture: 64.0mm
+            >>   element width: 2.000mm
+            >>   element count: 16
+
+            > Probe calculated properties:
+            >>   inter-element gap: 2.0mm
+            >>   Active aperture: 64.0mm
+            >>   Active aperture near field transition: 119.4mm
+            >>   Passive aperture near field transition: 119.4mm
+            >>   Active aperture near field transition: 119.4mm
+
+            > Focal point calculated properties:
+            >>   focal distance: 51.0mm
+            >>   active aperture -6dB focal spot size: 7.0mm
+            >>   passive aperture -6dB natural focus spot size: 16.3mm
+
+        """
         txt = ""
         txt = txt + "Basic linear probe:"
         txt = txt + linesep + "> Environment:"
@@ -196,7 +262,7 @@ class LinearArray:
     def visualize_array_elements(self, figsize=(4, 3), dpi=150, filename=None):
         """ create a 2D top-down plot of how do the array element patches look like
 
-        Example:
+        Example output :
 
         .. image:: _static/example_visualize_array_elements.png
 
@@ -240,7 +306,7 @@ class LinearArray:
     def visualize_time_of_flight(self, figsize=(4, 3), dpi=150, filename=None):
         """plots the computed time-of-flight values for each probe element
 
-        Example:
+        Example output:
 
         .. image:: _static/example_visualize_time_of_flight.png
 
@@ -251,7 +317,8 @@ class LinearArray:
 
         """
         plt.figure(figsize=figsize, dpi=dpi)
-        plt.stem(self.time_of_flight_probe_to_focal_point * 1e6)
+        plt.stem(np.arange(0, self.element_count), self.time_of_flight_probe_to_focal_point * 1e6)
+        plt.xticks(np.arange(0, self.element_count, step=4))
         plt.xlabel('element index[-]')
         plt.ylabel('time of flight from probe\n to focal point[$\mu$s]')
         plt.grid(True)
@@ -264,7 +331,7 @@ class LinearArray:
     def visualize_focal_laws(self, figsize=(4, 3), dpi=150, filename=None):
         """plots computed firing delays (focal laws)  for each probe element
 
-        Example:
+        Example output :
 
         .. image:: _static/example_visualize_focal_laws.png
 
@@ -277,9 +344,10 @@ class LinearArray:
 
         """
         plt.figure(figsize=figsize, dpi=dpi)
-        plt.stem(self.focal_laws * 1e6)
+        plt.stem(np.arange(0, self.element_count), self.focal_laws * 1e6)
         plt.xlabel('element index[-]')
-        plt.ylabel('time of flight from probe\n to focal point[$\mu$s]')
+        plt.ylabel("time of flight from probe"+linesep+"to focal point[$\mu$s]")
+        plt.xticks(np.arange(0, self.element_count, step=4))
         plt.grid(True)
         if filename is None:
             plt.show()
@@ -290,9 +358,9 @@ class LinearArray:
     def export_focal_laws_to_onscale(self, filename="focal_laws.txt"):
         """ produces an input file to PZFlex/Onscale, that contains the focal laws and per-element gains
 
-        Example file contents:
+        Example output file contents:
 
-        .. code-block:
+        .. code-block:: XML
 
             symb tshift1 = 0.000000e+00
             symb eweight1 = -4.210510e-04
@@ -301,11 +369,11 @@ class LinearArray:
             symb tshift3 = -8.132675e-07
             symb eweight3 = -3.136265e-02
 
-        :param filename: file name to use. Remember about adding the `.extension` - `.txt` recommended.
+        :param string filename: file name to use. Remember about adding the file extension. `.txt` is recommended.
 
         :return: prints the code to screen, and saves to the specified file.
 
-        .. Todo:
+        .. Todo::
 
             At this time, all the gains are set to 1.0 -- that is, no apodisation. Write the code to make the apodisation.
 
