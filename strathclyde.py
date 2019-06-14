@@ -67,42 +67,66 @@ class LinearArray:
 
     @property
     def wavelength(self):
-        """ wave length in given media, in meters [m]"""
+        """ wave length in given media, in meters [m]
+
+        does :code:`return self.sound_velocity/self.radiation_frequency`
+        """
         return self.sound_velocity/self.radiation_frequency
 
     @property
     def wavenumber(self):
-        """count of waves per meter, in [1/m]"""
+        """count of waves per meter, in [1/m]
+
+        does :code:`return 1.0 / self.wavelength`
+        """
         return 1.0 / self.wavelength
 
     @property
     def wavenumber_rotations(self):
-        """count of rotations per meter, in [radians/m]"""
+        """count of rotations per meter, in [radians/m]
+
+        does :code:`return 2.0*np.pi / self.wavelength`
+        """
         return 2.0*np.pi / self.wavelength
 
     @property
     def dx_simulation(self):
-        """distance between points for sampling the radiating surfaces with radiating points, in [m]"""
+        """distance between points for sampling the radiating surfaces with radiating points, in [m]
+
+        does :code:`return self.wavelength / self.sampling_density`
+        """
         return self.wavelength / self.sampling_density
 
     @property
     def active_aperture(self):
-        """calculated size of the active aperture [m]"""
+        """calculated size of the active aperture [m]
+
+        does :code:`return self.element_pitch * self.element_count`
+        """
         return self.element_pitch * self.element_count
 
     @property
     def element_gap(self):
-        """calculated gap width between elements"""
+        """calculated gap width between elements
+
+        does :code:`return self.element_pitch-self.element_width`
+        """
         return self.element_pitch-self.element_width
 
     @property
     def active_aperture_near_field(self):
-        """estimated distance from the probe surface to the transition between near and far field,[m]"""
+        """estimated distance from the probe surface to the transition between near and far field,[m]
+
+        does :code:`return self.active_aperture**2 * self.radiation_frequency / 4.0 / self.sound_velocity`
+        """
         return self.active_aperture**2 * self.radiation_frequency / 4.0 / self.sound_velocity
 
     @property
     def passive_aperture_near_field(self):
-        """estimated distance from the probe surface to the transition between near and far field,[m]"""
+        """estimated distance from the probe surface to the transition between near and far field,[m]
+
+        does :code:`return self.passive_aperture**2 * self.radiation_frequency / 4.0 / self.sound_velocity`
+        """
         return self.passive_aperture**2 * self.radiation_frequency / 4.0 / self.sound_velocity
 
     def focusing_power_estimate(self, focal_distance, aperture):
@@ -118,17 +142,26 @@ class LinearArray:
 
     @property
     def focal_distance(self):
-        """distance from probe centre to the selected focal point,[m]"""
+        """calculated distance from probe centre to the selected focal point,[m]
+
+        does :code:`return np.sqrt(np.sum(np.array(self.focal_point)**2))`
+        """
         return np.sqrt(np.sum(np.array(self.focal_point)**2))
 
     @property
     def passive_aperture_focus_power_estimage(self):
-        """estimated natural focus spot size in the passive plane"""
+        """estimated natural focus spot size in the passive plane
+
+        does :code:`return self.focusing_power_estimate(self.passive_aperture_near_field, self.passive_aperture)`
+        """
         return self.focusing_power_estimate(self.passive_aperture_near_field, self.passive_aperture)
 
     @property
     def active_aperture_focus_power_estimate(self):
-        """estimated focal spot size in the active plane, for given selected focal point location"""
+        """estimated focal spot size in the active plane, for given selected focal point location
+
+        does :code:`return self.focusing_power_estimate(self.focal_distance, self.active_aperture)`
+        """
         return self.focusing_power_estimate(self.focal_distance, self.active_aperture)
 
     @property
@@ -549,8 +582,8 @@ class LinearArray:
         gains = self.focal_laws_gains
         txt = ""+linesep
         for idx in range(self.element_count):
-            txt_delay = "symb tshift{} = {:0.6e}".format(idx, delays[idx])
-            txt_gain = "symb eweight{} = {:0.6e}".format(idx, gains[idx])
+            txt_delay = "symb tshift{} = {:0.6e}".format(idx, delays[idx, 0])
+            txt_gain = "symb eweight{} = {:0.6e}".format(idx, gains[idx, 0])
             txt = txt+txt_delay+linesep+txt_gain+linesep
 
         # save to file now
@@ -574,9 +607,18 @@ class LinearArray:
         """
         import handybeam
         import handybeam.world
+        import handybeam.tx_array
         import handybeam.tx_array_library
         world = handybeam.world.World(frequency=self.radiation_frequency, sound_velocity=self.sound_velocity)
-        world.tx_array = handybeam.tx_array_library.simple_linear(parent=world, element_count=self.element_count, element_pitch = self.element_pitch)
+        hb_array = handybeam.tx_array.TxArray()
+        hb_array.tx_array_element_descriptor = self.create_point_cloud_all_elements()
+        hb_array.name = "Strathclyde style linear array, subsampled, {} real elements".format(self.element_count)
+        world.tx_array = hb_array
+
+        return world
+
+
+
 
 
 
