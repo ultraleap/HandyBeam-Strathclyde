@@ -10,6 +10,7 @@ from os import linesep
 import numpy as np
 import matplotlib.pyplot as plt
 
+tau = 2 * np.pi
 
 class LinearArray:
     """
@@ -242,11 +243,14 @@ class LinearArray:
     def focal_laws_phases(self):
         """converts time-domain focal_laws_delays into frequency-domain phases
 
-        does :code:`return self.focal_laws_delays(self)/self.radiation_frequency*2*np.pi`
+        the phases are wrapped (that is, range from 0.0 to tau)
+
+        does :code:`return np.mod(self.focal_laws_delays/self.radiation_period, 1.0)*tau`
 
         :returns: focal_laws_phases=np.array(), shaped [ self.element_count,]
         """
-        return self.focal_laws_delays/self.radiation_period*2*np.pi
+
+        return np.mod(self.focal_laws_delays/self.radiation_period, 1.0)*tau
 
     @property
     def focal_laws_gains(self):
@@ -319,7 +323,8 @@ class LinearArray:
              point_nan_list,  # 2nd nan
              point_nan_list,  # 3rd nan
              point_nan_list   # last nan
-             ), axis=1)
+             ), axis=1).astype(np.float32)
+
 
         return point_list
 
@@ -354,7 +359,7 @@ class LinearArray:
                     tx_phase=focal_laws_phases[idx_element])
                  )
                  )
-        return point_list
+        return point_list.astype(np.float32)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -457,7 +462,7 @@ class LinearArray:
         ha.add_collection(pc)
 
         # add points for element centres
-        hp = plt.plot(self.element_centre_locations[:, 0], self.element_centre_locations[:, 1], 'o')
+        # hp = plt.plot(self.element_centre_locations[:, 0], self.element_centre_locations[:, 1], 'o')
 
         plt.grid(True)
         plt.axis('equal')
@@ -487,7 +492,7 @@ class LinearArray:
         plt.stem(np.arange(0, self.element_count), self.time_of_flight_probe_to_focal_point * 1e6)
         plt.xticks(np.arange(0, self.element_count, step=4))
         plt.xlabel('element index[-]')
-        plt.ylabel('time of flight from probe\n to focal point[$\mu$s]')
+        plt.ylabel('time of flight from probe'+linesep+'to focal point[$\mu$s]')
         plt.grid(True)
         if filename is None:
             plt.show()
@@ -527,7 +532,7 @@ class LinearArray:
 
         Example output :
 
-        .. image:: _static/example_visualize_focal_laws.png
+        .. image:: _static/example_point_cloud_all_elements.png
 
 
         :param figsize: size in inches of the created figure canvas
@@ -538,7 +543,7 @@ class LinearArray:
 
         plt.figure(figsize=figsize, dpi=dpi)
         point_cloud = self.create_point_cloud_all_elements()
-        plt.plot(point_cloud[:, 0], point_cloud[:, 1], 'o')
+        plt.plot(point_cloud[:, 0], point_cloud[:, 1], ',')
         plt.grid(True)
         plt.axis('equal')
         plt.xlabel('x-dimension[m]\npassive aperture')
@@ -548,6 +553,8 @@ class LinearArray:
         else:
             plt.savefig(filename, bbox_inches='tight')
             plt.close()
+
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -617,8 +624,69 @@ class LinearArray:
 
         return world
 
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+# visualize* that need no object reference
 
 
+def visualize_2d_amplitude(sampler,figsize=(4, 3), dpi=150, filename=None):
+    """this visualizes using sampler.extent -- that is, coordinates relative to the grid"""
+    plt.figure(figsize=figsize, dpi=dpi)
+    plt.imshow(np.abs(sampler.pressure_field), cmap='hot', extent=sampler.extent)
+    plt.xlabel('x-extent of the grid[m]')
+    plt.ylabel('y-extent of the grid[m]')
+    lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field)))
+    plt.clim(0, lims * 0.8)
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
 
+
+def get_rectilinear_sampler_coordinates_maxmin(coordinates):
+    x = coordinates[:, :, 0].ravel()
+    xmax = np.max(x)
+    xmin = np.min(x)
+    y = coordinates[:, :, 1].ravel()
+    ymax = np.max(y)
+    ymin = np.min(y)
+    z = coordinates[:, :, 2].ravel()
+    zmax = np.max(z)
+    zmin = np.min(z)
+    return (xmax, xmin, ymax, ymin, zmax, zmin)
+
+
+def visualize_2d_amplitude_xz(sampler,figsize=(4, 3), dpi=150, filename=None):
+    """this visualizes using sampler.coordinates -- that is, coordinates are absolute to the world"""
+    plt.figure(figsize=figsize, dpi=dpi)
+    limits = get_rectilinear_sampler_coordinates_maxmin(sampler.coordinates)
+    plt.imshow(np.abs(sampler.pressure_field), cmap='hot', extent=(limits[2], limits[3], limits[5], limits[4]))
+    plt.xlabel('y-coordinate[m]')
+    plt.ylabel('z-coordinate[m]')
+    lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field)))
+    plt.clim(0, lims * 0.8)
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
+
+
+def visualize_2d_real(sampler, figsize=(4, 3), dpi=150, filename=None):
+    plt.figure(figsize=figsize, dpi=dpi)
+    plt.imshow(np.real(sampler.pressure_field), cmap='bwr', extent=sampler.extent)
+    plt.xlabel('x-extent of the grid[m]')
+    plt.ylabel('y-extent of the grid[m]')
+    lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field))) * 0.8
+    plt.clim(-lims, lims)
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
 
 
