@@ -9,8 +9,16 @@ Contains the class :class:`LinearArray`.
 from os import linesep
 import numpy as np
 import matplotlib.pyplot as plt
+from handybeam.misc import HandyDict
+
+
 
 tau = 2 * np.pi
+"""Tau is the *actual* circle constant. 
+
+Not some half-circle constant like pi.
+"""
+
 
 class LinearArray:
     """
@@ -26,7 +34,9 @@ class LinearArray:
                  element_pitch=1.0e-3,
                  element_width=None,
                  element_count=16,
-                 focal_point=np.array((0.0e-3, 0.0e-3, 200e-3))
+                 focal_point=np.array((0.0e-3, 0.0e-3, 200e-3)),
+                 amplitude_setting=1.0,
+                 window_coefficients=None
                 ):
         """ Initialize the LinearArray object with the following properties:
 
@@ -46,13 +56,24 @@ class LinearArray:
         :param float element_width: active-aperture size of the array element. Set to :code:`None` to get :code:`element_pitch/2`
         :param int element_count: How many elements in this array.
         :param tuple(float) focal_point: xyz location of the intended focal point.
-        """
+        :param float amplitude_setting: amplitude setting of the elements; it's like a voltage setting. Use to beautify visualisation only, otherwise leave at 1.0
+        :param np.array() window_coefficients: window coefficients for apodisation.
+            Set to None to get rectangular window (boxcar, ones)
+            Set to np.array(shape=(element_count,),dtype=np.float) to set particular coefficients.
+            Example 1: :code:`scipy.signal.windows.flattop(16,sym=True)`
+            Example 2: :code:`np.ones(shape=(16,))`
+      """
         self.radiation_frequency = radiation_frequency
         self.sound_velocity = sound_velocity
         self.passive_aperture = passive_aperture
         self.sampling_density = sampling_density
         self.element_pitch = element_pitch
         self.element_count = element_count
+        self.amplitude_setting = amplitude_setting
+        if window_coefficients is None:
+            self.window_coefficients = np.ones(shape=(self.element_count,))
+        else:
+            self.window_coefficients = window_coefficients
         if element_width is None:
             self.element_width = element_pitch * 0.5
         else:
@@ -150,7 +171,7 @@ class LinearArray:
         return np.sqrt(np.sum(np.array(self.focal_point)**2))
 
     @property
-    def passive_aperture_focus_power_estimage(self):
+    def passive_aperture_focus_power_estimate(self):
         """estimated natural focus spot size in the passive plane
 
         does :code:`return self.focusing_power_estimate(self.passive_aperture_near_field, self.passive_aperture)`
@@ -207,9 +228,9 @@ class LinearArray:
         """
 
         locations = self.element_centre_locations
-        tofs=np.full((self.element_count,1), np.NaN)  # initialize the output with NaNs
+        tofs = np.full((self.element_count, 1), np.NaN)  # initialize the output with NaNs
         for idx in range(self.element_count):
-            tofs[idx,0] = self.time_of_flight(self.focal_point, locations[idx, :])
+            tofs[idx, 0] = self.time_of_flight(self.focal_point, locations[idx, :])
 
         return tofs
 
@@ -256,9 +277,11 @@ class LinearArray:
     def focal_laws_gains(self):
         """ generates gains for elements -- e.g. includes apodisation or shadowing
 
+        does :code:`return self.window_coeffs*self.amplitude_setting`
+
         :return:
         """
-        return np.ones(shape=(self.element_count, 1))
+        return self.window_coefficients*self.amplitude_setting
 
     def create_point_cloud_for_array_element(self,
                                              passive_aperture=np.NaN,
@@ -269,6 +292,9 @@ class LinearArray:
         """ Creates a cloud of :code:`xyznnnddddap____` points that simulate a larger aperture of a single phased array element.
 
         for the description of what is `xyznnnddddap____`, see the `tx_array_descriptor_a` documentation of `HandyBeam`
+
+        Makes sure that the total output (as set by directivity_amplitude_poly2_c0) is set to be equal to the desired area of the transducer
+        that is, the larger the transducer, the larger the total output.
 
         .. ToDo::
 
@@ -297,6 +323,10 @@ class LinearArray:
             active_aperture / 2 + element_position[1],
             count_of_points_along_y)
 
+        element_area = passive_aperture * active_aperture
+        count_of_sampling_points = count_of_points_along_x*count_of_points_along_y
+        amplitude_scaling = element_area / count_of_sampling_points
+
         point_x_grid, point_y_grid = np.meshgrid(coordinate_of_points_along_x, coordinate_of_points_along_y)
         point_x_list = np.expand_dims(np.ravel(point_x_grid), axis=0).T
         point_y_list = np.expand_dims(np.ravel(point_y_grid), axis=0).T
@@ -314,7 +344,7 @@ class LinearArray:
              point_zeros_list,  # ynormal
              point_ones_list,  # znormal
              point_zeros_list,  # directivity_phase_poly1_c1
-             point_ones_list,  # directivity_amplitude_poly2_c0
+             point_ones_list * amplitude_scaling,  # directivity_amplitude_poly2_c0 - scaled to produce output proportional to the area of the element
              point_zeros_list,  # directivity_amplitude_poly2_c1
              point_zeros_list,  # directivity_amplitude_poly2_c2
              point_zeros_list + tx_amplitude,  # amplitude_ratio_setting
@@ -325,15 +355,14 @@ class LinearArray:
              point_nan_list   # last nan
              ), axis=1).astype(np.float32)
 
-
         return point_list
 
     def create_point_cloud_all_elements(self):
-        """
+        """Creates the cloud of points for HandyBeam core propagator to consume.
 
-        .. ToDo::
+        The multiple points correctly account for the directivity of an element with arbitrary aperture.
 
-            ! ToDo: check if the direction of phases is correct -- could need to be negative here
+        The Handybeam's directivity model is not used. (coefficients at zero).
 
         :return: point cloud, numpy.array.shape == (:,16), the count of points generated depends on :code:`self.dx_simulation`
 
@@ -343,7 +372,6 @@ class LinearArray:
         focal_laws = self.focal_laws_delays
         # convert time-domain focal law to frequency-domain focal law at the frequency of interest
         # this means, wrap
-        # ! ToDo: check if the direction of phases is correct -- could need to be negative here
         focal_laws_phases = self.focal_laws_phases
         focal_laws_gains = self.focal_laws_gains
 
@@ -392,7 +420,6 @@ class LinearArray:
             >>   Active aperture: 64.0mm
             >>   Active aperture near field transition: 119.4mm
             >>   Passive aperture near field transition: 119.4mm
-            >>   Active aperture near field transition: 119.4mm
 
             > Focal point calculated properties:
             >>   focal distance: 51.0mm
@@ -417,19 +444,48 @@ class LinearArray:
         txt = txt + linesep + "> Probe calculated properties:"
         txt = txt + linesep + ">>   inter-element gap: {:0.1f}mm".format(self.element_gap*1e3)
         txt = txt + linesep + ">>   Active aperture: {:0.1f}mm".format(self.active_aperture*1e3)
-        txt = txt + linesep + ">>   Active aperture near field transition: {:0.1f}mm".format(self.active_aperture_near_field*1e3)
-        txt = txt + linesep + ">>   Passive aperture near field transition: {:0.1f}mm".format(self.passive_aperture_near_field * 1e3)
-        txt = txt + linesep + ">>   Active aperture near field transition: {:0.1f}mm".format(self.active_aperture_near_field*1e3)
+        txt = txt + linesep + ">>   Active aperture near field transition/boundary: {:0.1f}mm".format(self.active_aperture_near_field*1e3)
+        txt = txt + linesep + ">>   Passive aperture near field transition/boundary: {:0.1f}mm".format(self.passive_aperture_near_field * 1e3)
         txt = txt + linesep + "  "
         txt = txt + linesep + "> Focal point calculated properties:"
         txt = txt + linesep + ">>   focal distance: {:0.1f}mm".format(self.focal_distance*1e3)
         txt = txt + linesep + ">>   active aperture -6dB focal spot size: {:0.1f}mm".format(self.active_aperture_focus_power_estimate * 1e3)
-        txt = txt + linesep + ">>   passive aperture -6dB natural focus spot size: {:0.1f}mm".format(self.passive_aperture_focus_power_estimage * 1e3)
+        txt = txt + linesep + ">>   passive aperture -6dB natural focus spot size: {:0.1f}mm".format(self.passive_aperture_focus_power_estimate * 1e3)
         return txt
 
     def __repr__(self):
         """links to self.__str__()"""
         return self.__str__()
+
+    @property
+    def stats(self):
+        """ return calculated properties in a dictionary format (HandyDict)
+
+        HandyDict is a dict, but with some extra methods so that a dot notation works on it.
+
+        :return: HandyDict stats -  a dictionary with stats saved
+        """
+        stats = HandyDict({
+            'radiation_frequency': self.radiation_frequency,
+            'sound_velocity': self.sound_velocity,
+            'wavelength': self.wavelength,
+            'wavenumber': self.wavenumber,
+            'sampling_density_setting': self.sampling_density,
+            'sampling_density_effective': self.dx_simulation,
+            'passive_aperture': self.passive_aperture,
+            'element_width': self.element_width,
+            'element_count': self.element_count,
+            'element_gap': self.element_gap,
+            'active_aperture': self.active_aperture,
+            'active_aperture_nearfield_boundary': self.active_aperture_near_field,
+            'passive_aperture_nearfield_boundary': self.passive_aperture_near_field,
+            'current_focal_point_distance': self.focal_distance,
+            'active_aperture_focus_power_estimate': self.active_aperture_focus_power_estimate,
+            'passive_aperture_focus_power_estimate': self.passive_aperture_focus_power_estimate
+            }
+            )
+
+        return stats
 
     def visualize_array_elements(self, figsize=(4, 3), dpi=150, filename=None):
         """ create a 2D top-down plot of how do the array element patches look like
@@ -492,7 +548,7 @@ class LinearArray:
         plt.stem(np.arange(0, self.element_count), self.time_of_flight_probe_to_focal_point * 1e6)
         plt.xticks(np.arange(0, self.element_count, step=4))
         plt.xlabel('element index[-]')
-        plt.ylabel('time of flight from probe'+linesep+'to focal point[$\mu$s]')
+        plt.ylabel('time of flight from probe\nto focal point[$\mu$s]')
         plt.grid(True)
         if filename is None:
             plt.show()
@@ -518,7 +574,7 @@ class LinearArray:
         plt.figure(figsize=figsize, dpi=dpi)
         plt.stem(np.arange(0, self.element_count), self.focal_laws_delays * 1e6)
         plt.xlabel('element index[-]')
-        plt.ylabel("time of flight from probe"+linesep+"to focal point[$\mu$s]")
+        plt.ylabel("time of flight from probe\nto focal point[$\mu$s]")
         plt.xticks(np.arange(0, self.element_count, step=4))
         plt.grid(True)
         if filename is None:
@@ -533,7 +589,6 @@ class LinearArray:
         Example output :
 
         .. image:: _static/example_point_cloud_all_elements.png
-
 
         :param figsize: size in inches of the created figure canvas
         :param dpi: resolution in points-per-inch for the figure canvas
@@ -554,13 +609,11 @@ class LinearArray:
             plt.savefig(filename, bbox_inches='tight')
             plt.close()
 
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Export*
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Export*
 
     def export_focal_laws_to_onscale(self, filename="focal_laws_delays.txt"):
         """ produces an input file to PZFlex/Onscale, that contains the focal laws and per-element gains
@@ -580,13 +633,11 @@ class LinearArray:
 
         :return: prints the code to screen, and saves to the specified file.
 
-        .. Todo::
-
-            At this time, all the gains are set to 1.0 -- that is, no apodisation. Write the code to make the apodisation.
 
         """
         delays = self.focal_laws_delays
         gains = self.focal_laws_gains
+        gains = np.expand_dims(gains,1)
         txt = ""+linesep
         for idx in range(self.element_count):
             txt_delay = "symb tshift{} = {:0.6e}".format(idx, delays[idx, 0])
@@ -603,11 +654,6 @@ class LinearArray:
 
     def create_handybeam_world(self):
         """ creates a handybeam.world.World object with the settings set up so that it is ready to conduct the simulation of the acoustic field generated by the array.
-
-        .. ToDo::
-
-            Currently a stock array is given to the handybeam.world.World(); modify so that the sampled-array is given with the appropriate focal law and apodisation applied
-            use create_point_cloud_for_array_element() and generate_focal_law_phases() and generate_apodisaion_coefficients()
 
         :return handybeam.world.World: the :class:`handybeam.world.World` object with :code:`tx_array` and :code:`samplers` set up
 
@@ -640,11 +686,13 @@ def visualize_2d_amplitude(sampler,figsize=(4, 3), dpi=150, filename=None):
     plt.ylabel('y-extent of the grid[m]')
     lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field)))
     plt.clim(0, lims * 0.8)
+    plt.colorbar()
     if filename is None:
         plt.show()
     else:
         plt.savefig(filename, bbox_inches='tight')
         plt.close()
+
 
 
 def get_rectilinear_sampler_coordinates_maxmin(coordinates):
@@ -669,6 +717,7 @@ def visualize_2d_amplitude_xz(sampler,figsize=(4, 3), dpi=150, filename=None):
     plt.ylabel('z-coordinate[m]')
     lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field)))
     plt.clim(0, lims * 0.8)
+    plt.colorbar()
     if filename is None:
         plt.show()
     else:
@@ -690,3 +739,84 @@ def visualize_2d_real(sampler, figsize=(4, 3), dpi=150, filename=None):
         plt.close()
 
 
+def analyse_semicircle_sampled_data(sampler_angles, sampler_radius,p):
+    """
+    Performs analysis on the data calculated by a semicircle sampler
+
+    .. Note:
+
+        This procedure assumes a lot about correctness of the underlying data! Use as per example only.
+
+    Example:
+
+    .. code-block: python
+
+        # create a sampling line, semi-circle around the array, to sample the field there
+        tau=2*np.pi
+        sampler_radius=focal_radius
+        sampler_angles=np.linspace(-tau/4,tau/4,num=2048,endpoint=True)
+        ys=np.sin(sampler_angles)*sampler_radius
+        zs=np.cos(sampler_angles)*sampler_radius
+        xs=np.zeros(ys.shape)
+
+        semicircle_sampler=handybeam_world.add_sampler(handybeam.samplers.clist_sampler.ClistSampler())
+        semicircle_sampler.add_sampling_points(xs,ys,zs)
+
+        semicircle_sampler.propagate()
+        strathclyde.analise_semicircle_sampled_data(sampler_angles,sampler_radius,semicircle_sampler.pressure_field)
+
+        strathclyde.print_analysis(stats)
+
+    :param np.array() sampler_angles: the x-axis of the data
+    :param float sampler_radius: radius of the semicircle sampled from
+    :param np.array() p: pressure data
+    :return: HandyDict with statistics about the provided data
+    """
+    # start a dictionary
+    stats = HandyDict({'pabs':np.abs(p)})
+    # convert p to abs(p)
+    stats['pabs'] = np.abs(p)
+    # find peak p
+    stats['peak_p'] = np.max(stats['pabs'])
+    # find location of the peak_p
+    stats['peak_location_idx'] = np.argmax(stats['pabs'])
+    stats['peak_location_angle'] = sampler_angles[stats['peak_location_idx']]
+    # make a db scale vector
+    stats['p_db'] = 20.0*np.log10(stats['pabs'])
+    stats['p_db'] = stats['p_db']-np.max(stats['p_db'])
+    # make a -3dB mask and measure it's width
+    stats['db_mask_3db'] = stats['p_db'] > -3.0
+    stats['beam_width_idx'] = np.sum(stats['db_mask_3db'])
+    stats['first_up'] = np.argwhere(stats['db_mask_3db'])[0][0]
+    stats['last_up'] = np.argwhere(stats['db_mask_3db'])[-1][0]
+    stats['beam_width_3db_radians'] = sampler_angles[stats['last_up']] - sampler_angles[stats['first_up']]
+    stats['beam_width_linear'] = stats['beam_width_3db_radians'] * sampler_radius
+    # create a side lobe mask
+    last_idx = len(sampler_angles)
+    stats['mask_main_lobe_right'] = min(last_idx, stats['last_up']+stats['beam_width_idx'])
+    stats['mask_main_lobe_left'] = max(0, stats['first_up']-stats['beam_width_idx'])
+    tmp = range(last_idx)
+    stats['mask_main_lobe'] = np.bitwise_and(tmp < stats['mask_main_lobe_right'], tmp > stats['mask_main_lobe_left'])
+    stats['power_main_lobe'] = np.sum(stats['pabs']**2 * stats['db_mask_3db'])
+    stats['power_side_lobes'] = np.sum(stats['pabs']**2 * ~stats['mask_main_lobe'])
+    stats['peak_sidelobe'] = np.max(stats['pabs']*~stats['mask_main_lobe'])
+    stats['contrast_mts_ratio'] = 20*np.log10(stats['power_main_lobe']/stats['power_side_lobes'])
+    return stats
+
+
+def print_analysis(stats):
+    print('Main lobe:')
+    print(' >> peak amplitude value: {}'.format(stats['peak_p']))
+    print(' >> peak location : {:0.3f} radians = {:0.2f} degrees'.format(
+        stats['peak_location_angle'],
+        stats['peak_location_angle']*180/np.pi))
+    print(' >> angular width (-3dB): {:0.3f} radians = {:0.2f} degrees'.format(
+        stats['beam_width_3db_radians'],
+        stats['beam_width_3db_radians']*180/np.pi))
+    print(' >> linear width (-3dB): {:0.3f} ')
+    print('integrated main lobe power: {}'.format(stats['power_main_lobe']))
+    print('Side lobes:')
+    print(' >> peak side lobe value :{}'.format(stats['peak_sidelobe']))
+    print(' >> integrated side lobe power: {}'.format(stats['power_side_lobes']))
+    print('Contrast metric:')
+    print(' >> integrated main lobe to side lobe ratio: {:0.2f} dB'.format(stats['contrast_mts_ratio']))
