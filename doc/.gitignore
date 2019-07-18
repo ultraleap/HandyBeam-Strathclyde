@@ -1,4 +1,7 @@
 build/**
+build_html/**
+build_htmldir/**
+build_htmlhelp/**
 
 # Compiled python modules
 *.pyc
