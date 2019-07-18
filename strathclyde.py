@@ -694,7 +694,6 @@ def visualize_2d_amplitude(sampler,figsize=(4, 3), dpi=150, filename=None):
         plt.close()
 
 
-
 def get_rectilinear_sampler_coordinates_maxmin(coordinates):
     x = coordinates[:, :, 0].ravel()
     xmax = np.max(x)
@@ -708,13 +707,22 @@ def get_rectilinear_sampler_coordinates_maxmin(coordinates):
     return (xmax, xmin, ymax, ymin, zmax, zmin)
 
 
-def visualize_2d_amplitude_xz(sampler,figsize=(4, 3), dpi=150, filename=None):
-    """this visualizes using sampler.coordinates -- that is, coordinates are absolute to the world"""
+def visualize_2d_amplitude_xz(sampler, figsize=(4, 3), dpi=150, filename=None,xlabel="provide x-label name",ylabel="provide y-label name"):
+    """ this visualizes using sampler.coordinates -- that is, coordinates are absolute to the world
+
+    :param sampler: the sampler object
+    :param figsize: figure size in inches
+    :param dpi: figure resolution in dpi
+    :param filename: if set, this is the file name to write. do not forget the :code:`.png` extension.
+    :param string xlabel: set to desired text on the x-axis of the figure. This will depend on what sampler do You provide.
+    :param string ylabel: set to desired text on the x-axis of the figure. This will depend on what sampler do You provide.
+    :return: displays or saves the figure.
+    """
     plt.figure(figsize=figsize, dpi=dpi)
     limits = get_rectilinear_sampler_coordinates_maxmin(sampler.coordinates)
     plt.imshow(np.abs(sampler.pressure_field), cmap='hot', extent=(limits[2], limits[3], limits[5], limits[4]))
-    plt.xlabel('y-coordinate[m]')
-    plt.ylabel('z-coordinate[m]')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field)))
     plt.clim(0, lims * 0.8)
     plt.colorbar()
@@ -725,11 +733,24 @@ def visualize_2d_amplitude_xz(sampler,figsize=(4, 3), dpi=150, filename=None):
         plt.close()
 
 
-def visualize_2d_real(sampler, figsize=(4, 3), dpi=150, filename=None):
+def visualize_2d_real(sampler, figsize=(4, 3), dpi=150,
+                      filename=None,
+                      xlabel="provide x-label name",
+                      ylabel="provide y-label name"):
+    """ this visualizes using sampler.coordinates -- that is, coordinates are absolute to the world
+
+    :param sampler: the sampler object
+    :param figsize: figure size in inches
+    :param dpi: figure resolution in dpi
+    :param filename: if set, this is the file name to write. do not forget the :code:`.png` extension.
+    :param string xlabel: set to desired text on the x-axis of the figure. This will depend on what sampler do You provide.
+    :param string ylabel: set to desired text on the x-axis of the figure. This will depend on what sampler do You provide.
+    :return: displays or saves the figure.
+    """
     plt.figure(figsize=figsize, dpi=dpi)
     plt.imshow(np.real(sampler.pressure_field), cmap='bwr', extent=sampler.extent)
-    plt.xlabel('x-extent of the grid[m]')
-    plt.ylabel('y-extent of the grid[m]')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     lims = np.max(np.abs(np.nan_to_num(sampler.pressure_field))) * 0.8
     plt.clim(-lims, lims)
     if filename is None:
@@ -813,7 +834,7 @@ def print_analysis(stats):
     print(' >> angular width (-3dB): {:0.3f} radians = {:0.2f} degrees'.format(
         stats['beam_width_3db_radians'],
         stats['beam_width_3db_radians']*180/np.pi))
-    print(' >> linear width (-3dB): {:0.3f} ')
+    print(' >> linear width (-3dB): {:0.3f}mm '.format(stats['beam_width_linear']*1e3))
     print('integrated main lobe power: {}'.format(stats['power_main_lobe']))
     print('Side lobes:')
     print(' >> peak side lobe value :{}'.format(stats['peak_sidelobe']))

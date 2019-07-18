@@ -25,11 +25,20 @@ parent_dir = os.path.dirname(current_dir)
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..\\..'))
-sys.path.insert(0, os.path.abspath('..\\..'))
+sys.path.insert(0, os.path.abspath('..\\..\\handybeam_core_repo\\'))
+sys.path.insert(0, os.path.abspath("..\\..\\handybeam_core_repo\\"))
+
 print('in sphinx conf.py:------------------------------------------------------')
 print('os.path.abspath("..\\..") == {}'.format(os.path.abspath('..\..')))
 print('os.path.abspath("..\\..\\..") == {}'.format(os.path.abspath('..\..\..')))
+print('os.path.abspath("..\\..\\handybeam_core_repo\\")== {}'.format(os.path.abspath("..\\..\\handybeam_core_repo\\")))
 print('------------------------------------------------------------------------')
+# print('importing handybeam.world...')
+# import handybeam.world
+# w = handybeam.world.World()
+# print('importing strathclyde...')
+# import strathclyde
+# q = strathclyde.LinearArray()
 
 # -- Project information -----------------------------------------------------
 
