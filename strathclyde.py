@@ -760,7 +760,7 @@ def visualize_2d_real(sampler, figsize=(4, 3), dpi=150,
         plt.close()
 
 
-def analyse_semicircle_sampled_data(sampler_angles, sampler_radius,p):
+def analyse_semicircle_sampled_data(sampler_angles, sampler_radius,p,distance_between_points):
     """
     Performs analysis on the data calculated by a semicircle sampler
 
@@ -818,8 +818,8 @@ def analyse_semicircle_sampled_data(sampler_angles, sampler_radius,p):
     stats['mask_main_lobe_left'] = max(0, stats['first_up']-stats['beam_width_idx'])
     tmp = range(last_idx)
     stats['mask_main_lobe'] = np.bitwise_and(tmp < stats['mask_main_lobe_right'], tmp > stats['mask_main_lobe_left'])
-    stats['power_main_lobe'] = np.sum(stats['pabs']**2 * stats['db_mask_3db'])
-    stats['power_side_lobes'] = np.sum(stats['pabs']**2 * ~stats['mask_main_lobe'])
+    stats['power_main_lobe'] = np.sum(stats['pabs']**2 * stats['db_mask_3db'])*distance_between_points # note: integration here, need to multiply by dx
+    stats['power_side_lobes'] = np.sum(stats['pabs']**2 * ~stats['mask_main_lobe'])* distance_between_points
     stats['peak_sidelobe'] = np.max(stats['pabs']*~stats['mask_main_lobe'])
     stats['contrast_mts_ratio'] = 20*np.log10(stats['power_main_lobe']/stats['power_side_lobes'])
     return stats
