@@ -573,8 +573,9 @@ class LinearArray:
         """
         plt.figure(figsize=figsize, dpi=dpi)
         plt.stem(np.arange(0, self.element_count), self.focal_laws_delays * 1e6)
+        plt.gca().invert_yaxis()
         plt.xlabel('element index[-]')
-        plt.ylabel("time of flight from probe\nto focal point[$\mu$s]")
+        plt.ylabel("delay time for element[$\mu$s]")
         plt.xticks(np.arange(0, self.element_count, step=4))
         plt.grid(True)
         if filename is None:
